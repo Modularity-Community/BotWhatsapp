@@ -1,5 +1,6 @@
 import { Client, LocalAuth } from "whatsapp-web.js";
 import { replyMessage } from "./src/index";
+
 const client = new Client({
   authStrategy: new LocalAuth(),
 });
