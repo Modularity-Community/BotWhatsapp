@@ -1,5 +1,10 @@
-import { Client, DefaultOptions } from "whatsapp-web.js";
-const client = new Client(DefaultOptions);
+import { Client, LocalAuth } from "whatsapp-web.js";
+import { replyMessage } from "./src/index";
+
+const client = new Client({
+  authStrategy: new LocalAuth(),
+});
+
 const qrCode = require("qrcode-terminal");
 
 client.on("qr", (qr) => {
@@ -10,10 +15,6 @@ client.on("ready", () => {
   console.log("Client is Ready");
 });
 
-client.on("message", (message) => {
-  if (message.body == "!hello-bot") {
-    message.reply("hello aku bot");
-  }
-});
+replyMessage(client);
 
 client.initialize();
