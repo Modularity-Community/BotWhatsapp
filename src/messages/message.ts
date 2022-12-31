@@ -1,55 +1,66 @@
-import { Client, List } from "whatsapp-web.js";
-import { Configuration, OpenAIApi } from "openai";
-
-import * as dotenv from "dotenv";
-dotenv.config();
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
-
-const prompt: string[] = [];
+import { Client, List, MessageMedia } from "whatsapp-web.js";
+import { completionText } from "../openai/completionText";
+import { imageGeneration } from "../openai/imageGeneration";
+import { variationImage } from "../openai/variationImage";
+import { Buffer } from "buffer";
 
 export function replyMessage(client: Client) {
   client.on("message", async (msg) => {
     const payload = msg.body.split(":");
-    if (payload[0] == "!bertanya" || payload[0] == "!Bertanya") {
+  if (payload[0] == "!nanya") {
       try {
-        const human = `orang: ${payload[1]}\n`;
-        prompt.push(human);
-
-        await openai
-          .createCompletion({
-            model: "text-davinci-003",
-            prompt: prompt.join(" "),
-            temperature: 0.9,
-            max_tokens: 4097,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0.6,
-            stop: [" orang:", " ai:"],
-          })
+        await completionText(payload[1])
           .then((value) => {
-            const ai = `ai: ${value.data.choices[0].text}\n`;
-            prompt.push(ai);
-
-            console.log(prompt.join(" "));
-
-            msg.reply(value.data.choices[0].text || "Tidak ada jawaban");
+            msg.reply(value.get("data"));
           })
-          .catch(function (error) {
-            if (error.response.status == 400) {
-              prompt.length = 0;
-              msg.reply(
-                "limit sudah habis, mencoba membersihkan session. tolong ulangi pertanyaan nya lagi"
-              );
-            }
-            console.log(error.response);
+          .catch((error) => {
+            msg.reply(error.get("data"));
           });
       } catch (error) {
-        prompt.length = 0;
+        msg.reply("Bot nya lagi error,coba ulangi sekali lagi");
+      }
+    }
+    if (payload[0] == "!img") {
+      try {
+        await imageGeneration(payload[1])
+          .then(async (value) => {
+            var media: MessageMedia = await MessageMedia.fromUrl(
+              value.get("data")
+            );
+            msg.reply(media);
+          })
+          .catch((error) => {
+            msg.reply(error.get("data"));
+          });
+      } catch (error) {
+        msg.reply("Bot nya lagi error,coba ulangi sekali lagi");
+      }
+    }
+    if (payload[0] == "!vimg") {
+      try {
+        if (msg.hasMedia) {
+          const media = await msg.downloadMedia();
+          const buffer = Buffer.from(
+            `data:image/png;base64,${media.data}`,
+            "base64"
+          );
+          const file: any = buffer;
+
+          file.name = `${media.filename || Date.now()}.png`;
+
+          variationImage(file)
+            .then(async (value) => {
+              var media: MessageMedia = await MessageMedia.fromUrl(
+                value.get("data")
+              );
+              msg.reply(media);
+            })
+            .catch((error) => {
+              msg.reply(error.get("data"));
+            });
+        }
+      } catch (error) {
+        console.log(error);
         msg.reply("Bot nya lagi error,coba ulangi sekali lagi");
       }
     }
