@@ -7,7 +7,7 @@ import { Buffer } from "buffer";
 export function replyMessage(client: Client) {
   client.on("message", async (msg) => {
     const payload = msg.body.split(":");
-  if (payload[0] == "!nanya") {
+    if (payload[0] == "!nanya") {
       try {
         await completionText(payload[1])
           .then((value) => {
