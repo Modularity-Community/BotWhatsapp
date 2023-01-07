@@ -6,7 +6,7 @@ export function completionText(prompt: string): Promise<Map<string, any>> {
     console.log(prompt)
     await OpenAiConf.createCompletion({
        model: "text-davinci-003",
-       prompt: "",
+       prompt: prompt,
        temperature: 0,
        max_tokens: 3910,
        top_p: 1,
