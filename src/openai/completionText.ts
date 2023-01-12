@@ -5,13 +5,13 @@ export function completionText(prompt: string): Promise<Map<string, any>> {
   return new Promise(async (resolve, reject) => {
     console.log(prompt)
     await OpenAiConf.createCompletion({
-      model: "text-davinci-003",
-      prompt: prompt,
-      temperature: 0.9,
-      max_tokens: 3833,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0.6,
+       model: "text-davinci-003",
+       prompt: prompt,
+       temperature: 0,
+       max_tokens: 3910,
+       top_p: 1,
+       frequency_penalty: 0.5,
+       presence_penalty: 0,
     })
       .then((value) => {
         myMap.set("data", value.data.choices[0].text || "Tidak ada jawaban");
